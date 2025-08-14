@@ -8,6 +8,7 @@ import './App.css';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Simulate loading time
@@ -17,6 +18,34 @@ function App() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Error boundary for web environment
+  useEffect(() => {
+    const handleError = (error) => {
+      console.error('App error:', error);
+      setError(error);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleError);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleError);
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <div className="error-screen">
+        <div className="error-content">
+          <h1>Something went wrong</h1>
+          <p>Error: {error.message || 'Unknown error'}</p>
+          <button onClick={() => window.location.reload()}>Reload Page</button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -35,7 +64,11 @@ function App() {
       <BrowserProvider>
         <AIProvider>
           <div className="App">
-            <BrowserWindow />
+            <Routes>
+              <Route path="/" element={<BrowserWindow />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<BrowserWindow />} />
+            </Routes>
           </div>
         </AIProvider>
       </BrowserProvider>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import TabBar from './TabBar';
 import NavigationBar from './NavigationBar';
 import AISidebar from './AISidebar';
@@ -34,7 +34,7 @@ const BrowserWindow = () => {
         console.error('Error getting app version:', error);
       });
     } else {
-      console.error('electronAPI is not available');
+      console.log('Running in web environment - using web adapter');
     }
   }, [tabs.length, addTab]);
 
@@ -100,7 +100,8 @@ const BrowserWindow = () => {
           console.error('Error navigating to URL:', error);
         }
       } else {
-        console.error('electronAPI.navigateTo not available');
+        console.log('Using web navigation - opening in new tab');
+        window.open(url, '_blank');
       }
     }
   };
@@ -116,7 +117,7 @@ const BrowserWindow = () => {
   // Handle browser view events
   useEffect(() => {
     if (!window.electronAPI) {
-      console.error('electronAPI not available');
+      console.log('electronAPI not available - running in web mode');
       return;
     }
     
@@ -154,6 +155,11 @@ const BrowserWindow = () => {
     };
   }, [activeTab, updateTab]);
 
+  // Render different content based on route
+  if (location.pathname === '/settings') {
+    return <Settings />;
+  }
+
   return (
     <div className={`browser-window ${isFullscreen ? 'fullscreen' : ''}`}>
       <TabBar
@@ -172,18 +178,38 @@ const BrowserWindow = () => {
       />
       
       <div className="browser-content">
-        <Routes>
-          <Route path="/" element={
-            <div 
-              className="content-area" 
-              ref={contentAreaRef}
-            >
-              {/* The actual web content is now handled by Electron's BrowserView */}
-              {/* This div just reserves the space for the BrowserView */}
+        <div 
+          className="content-area" 
+          ref={contentAreaRef}
+        >
+          {/* Web environment fallback */}
+          {!window.electronAPI && (
+            <div className="web-fallback">
+              <div className="web-fallback-content">
+                <h2>AI Browser</h2>
+                <p>Welcome to the web version of AI Browser!</p>
+                <p>Current URL: {currentTab?.url || 'No URL'}</p>
+                <div className="web-actions">
+                  <button 
+                    onClick={() => window.open(currentTab?.url || 'https://www.google.com', '_blank')}
+                    className="web-action-btn"
+                  >
+                    Open in New Tab
+                  </button>
+                  <button 
+                    onClick={() => window.open('https://www.google.com', '_blank')}
+                    className="web-action-btn"
+                  >
+                    Open Google
+                  </button>
+                </div>
+                <p className="web-note">
+                  Note: Full browser functionality is available in the desktop version.
+                </p>
+              </div>
             </div>
-          } />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+          )}
+        </div>
         
         {isSidebarOpen && isMainRoute && <AISidebar />}
       </div>
