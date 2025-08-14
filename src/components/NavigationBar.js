@@ -72,7 +72,7 @@ const NavigationBar = ({ url, onUrlChange, onTitleChange, onToggleSidebar }) => 
     // Add to history after a short delay to get the page title
     setTimeout(async () => {
       let title = processedUrl;
-      if (window.electronAPI) {
+      if (window.electronAPI && window.electronAPI.getTitle) {
         try {
           title = await window.electronAPI.getTitle() || processedUrl;
         } catch (error) {
@@ -85,20 +85,20 @@ const NavigationBar = ({ url, onUrlChange, onTitleChange, onToggleSidebar }) => 
   };
 
   const handleGoBack = async () => {
-    if (window.electronAPI) {
+    if (window.electronAPI && window.electronAPI.goBack) {
       await window.electronAPI.goBack();
     }
   };
 
   const handleGoForward = async () => {
-    if (window.electronAPI) {
+    if (window.electronAPI && window.electronAPI.goForward) {
       await window.electronAPI.goForward();
     }
   };
 
   const handleRefresh = async () => {
     setIsLoading(true);
-    if (window.electronAPI) {
+    if (window.electronAPI && window.electronAPI.reload) {
       await window.electronAPI.reload();
     }
     setTimeout(() => setIsLoading(false), 1000);

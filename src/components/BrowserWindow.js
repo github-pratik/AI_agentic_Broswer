@@ -27,12 +27,16 @@ const BrowserWindow = () => {
     // Test if electronAPI is available
     if (window.electronAPI) {
       console.log('electronAPI is available');
-      // Test a simple IPC call
-      window.electronAPI.getAppVersion().then(version => {
-        console.log('App version:', version);
-      }).catch(error => {
-        console.error('Error getting app version:', error);
-      });
+      // Test a simple IPC call if the method exists
+      if (window.electronAPI.getAppVersion) {
+        window.electronAPI.getAppVersion().then(version => {
+          console.log('App version:', version);
+        }).catch(error => {
+          console.error('Error getting app version:', error);
+        });
+      } else {
+        console.log('getAppVersion method not available');
+      }
     } else {
       console.log('Running in web environment - using web adapter');
     }
@@ -40,7 +44,7 @@ const BrowserWindow = () => {
 
   // Show/hide browser view based on route
   useEffect(() => {
-    if (window.electronAPI) {
+    if (window.electronAPI && window.electronAPI.showBrowserView && window.electronAPI.hideBrowserView) {
       if (isMainRoute) {
         window.electronAPI.showBrowserView();
       } else {
@@ -54,7 +58,7 @@ const BrowserWindow = () => {
     if (!isMainRoute) return; // Only update bounds on main route
     
     const updateBounds = () => {
-      if (contentAreaRef.current && window.electronAPI) {
+      if (contentAreaRef.current && window.electronAPI && window.electronAPI.updateBrowserViewBounds) {
         const rect = contentAreaRef.current.getBoundingClientRect();
         window.electronAPI.updateBrowserViewBounds({
           x: Math.round(rect.left),
@@ -140,14 +144,20 @@ const BrowserWindow = () => {
       console.log('Loading:', isLoading);
     };
 
-    // Set up event listeners
-    window.electronAPI.onBrowserNavigate(handleNavigation);
-    window.electronAPI.onBrowserTitleUpdated(handleTitleUpdate);
-    window.electronAPI.onBrowserLoading(handleLoading);
+    // Set up event listeners if methods exist
+    if (window.electronAPI.onBrowserNavigate) {
+      window.electronAPI.onBrowserNavigate(handleNavigation);
+    }
+    if (window.electronAPI.onBrowserTitleUpdated) {
+      window.electronAPI.onBrowserTitleUpdated(handleTitleUpdate);
+    }
+    if (window.electronAPI.onBrowserLoading) {
+      window.electronAPI.onBrowserLoading(handleLoading);
+    }
 
     // Cleanup
     return () => {
-      if (window.electronAPI) {
+      if (window.electronAPI && window.electronAPI.removeAllListeners) {
         window.electronAPI.removeAllListeners('browser-navigate');
         window.electronAPI.removeAllListeners('browser-title-updated');
         window.electronAPI.removeAllListeners('browser-loading');
