@@ -2,9 +2,11 @@
   "name": "ai-browser",
   "version": "1.0.0",
   "description": "AI-powered cross-platform browser with Electron and React",
-
   "homepage": "./",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "@testing-library/jest-dom": "^5.16.4",
