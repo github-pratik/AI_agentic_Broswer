@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot } from 'lucide-react';
+import { Send, Bot, X } from 'lucide-react';
 import { useAI } from '../contexts/AIContext';
 import { useBrowser } from '../contexts/BrowserContext';
 import './AISidebar.css';
 
-const AISidebar = () => {
+const AISidebar = ({ onClose }) => {
   const { 
     messages, 
     sendMessage, 
@@ -132,6 +132,13 @@ const AISidebar = () => {
               </option>
             ))}
           </select>
+          <button 
+            className="sidebar-close-btn" 
+            onClick={onClose}
+            title="Close AI Assistant"
+          >
+            <X size={16} />
+          </button>
         </div>
       </div>
 

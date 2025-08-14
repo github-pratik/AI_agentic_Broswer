@@ -3,10 +3,8 @@
   "version": "1.0.0",
   "description": "AI-powered cross-platform browser with Electron and React",
   "homepage": "./",
+  "main": "public/electron.js",
   "private": true,
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "@testing-library/jest-dom": "^5.16.4",
@@ -29,7 +27,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "npm run build && electron-builder",
+    "electron-pack-all": "npm run build && electron-builder -mwl"
   },
   "eslintConfig": {
     "extends": [
@@ -51,6 +53,33 @@
   },
   "devDependencies": {
     "@types/react": "^19.1.9",
-    "@types/react-dom": "^19.1.7"
+    "@types/react-dom": "^19.1.7",
+    "concurrently": "^9.2.0",
+    "electron": "^37.2.6",
+    "electron-builder": "^26.0.12",
+    "electron-is-dev": "^3.0.1",
+    "wait-on": "^8.0.4"
+  },
+  "build": {
+    "appId": "com.aibrowser.app",
+    "productName": "AI Browser",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "public/electron.js",
+      "public/preload.js",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }

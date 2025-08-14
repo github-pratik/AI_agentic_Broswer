@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import TabBar from './TabBar';
 import NavigationBar from './NavigationBar';
 import AISidebar from './AISidebar';
@@ -27,24 +27,20 @@ const BrowserWindow = () => {
     // Test if electronAPI is available
     if (window.electronAPI) {
       console.log('electronAPI is available');
-      // Test a simple IPC call if the method exists
-      if (window.electronAPI.getAppVersion) {
-        window.electronAPI.getAppVersion().then(version => {
-          console.log('App version:', version);
-        }).catch(error => {
-          console.error('Error getting app version:', error);
-        });
-      } else {
-        console.log('getAppVersion method not available');
-      }
+      // Test a simple IPC call
+      window.electronAPI.getAppVersion().then(version => {
+        console.log('App version:', version);
+      }).catch(error => {
+        console.error('Error getting app version:', error);
+      });
     } else {
-      console.log('Running in web environment - using web adapter');
+      console.error('electronAPI is not available');
     }
   }, [tabs.length, addTab]);
 
   // Show/hide browser view based on route
   useEffect(() => {
-    if (window.electronAPI && window.electronAPI.showBrowserView && window.electronAPI.hideBrowserView) {
+    if (window.electronAPI) {
       if (isMainRoute) {
         window.electronAPI.showBrowserView();
       } else {
@@ -53,12 +49,57 @@ const BrowserWindow = () => {
     }
   }, [isMainRoute]);
 
+  // Add demo mode indicator
+  useEffect(() => {
+    // Check if running in web demo mode
+    const isDemoMode = !window.electronAPI || window.electronAPI.getAppVersion === undefined;
+    if (isDemoMode) {
+      // Add demo mode indicator to the page
+      const demoIndicator = document.createElement('div');
+      demoIndicator.id = 'demo-mode-indicator';
+      demoIndicator.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 10000;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        animation: pulse 2s infinite;
+      `;
+      demoIndicator.innerHTML = '🌐 Demo Mode';
+      document.body.appendChild(demoIndicator);
+
+      // Add pulse animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+      `;
+      document.head.appendChild(style);
+
+      return () => {
+        const indicator = document.getElementById('demo-mode-indicator');
+        if (indicator) {
+          indicator.remove();
+        }
+      };
+    }
+  }, []);
+
   // Update browser view bounds when layout changes
   useEffect(() => {
     if (!isMainRoute) return; // Only update bounds on main route
     
     const updateBounds = () => {
-      if (contentAreaRef.current && window.electronAPI && window.electronAPI.updateBrowserViewBounds) {
+      if (contentAreaRef.current && window.electronAPI) {
         const rect = contentAreaRef.current.getBoundingClientRect();
         window.electronAPI.updateBrowserViewBounds({
           x: Math.round(rect.left),
@@ -104,8 +145,7 @@ const BrowserWindow = () => {
           console.error('Error navigating to URL:', error);
         }
       } else {
-        console.log('Using web navigation - opening in new tab');
-        window.open(url, '_blank');
+        console.error('electronAPI.navigateTo not available');
       }
     }
   };
@@ -121,7 +161,7 @@ const BrowserWindow = () => {
   // Handle browser view events
   useEffect(() => {
     if (!window.electronAPI) {
-      console.log('electronAPI not available - running in web mode');
+      console.error('electronAPI not available');
       return;
     }
     
@@ -144,31 +184,20 @@ const BrowserWindow = () => {
       console.log('Loading:', isLoading);
     };
 
-    // Set up event listeners if methods exist
-    if (window.electronAPI.onBrowserNavigate) {
-      window.electronAPI.onBrowserNavigate(handleNavigation);
-    }
-    if (window.electronAPI.onBrowserTitleUpdated) {
-      window.electronAPI.onBrowserTitleUpdated(handleTitleUpdate);
-    }
-    if (window.electronAPI.onBrowserLoading) {
-      window.electronAPI.onBrowserLoading(handleLoading);
-    }
+    // Set up event listeners
+    window.electronAPI.onBrowserNavigate(handleNavigation);
+    window.electronAPI.onBrowserTitleUpdated(handleTitleUpdate);
+    window.electronAPI.onBrowserLoading(handleLoading);
 
     // Cleanup
     return () => {
-      if (window.electronAPI && window.electronAPI.removeAllListeners) {
+      if (window.electronAPI) {
         window.electronAPI.removeAllListeners('browser-navigate');
         window.electronAPI.removeAllListeners('browser-title-updated');
         window.electronAPI.removeAllListeners('browser-loading');
       }
     };
   }, [activeTab, updateTab]);
-
-  // Render different content based on route
-  if (location.pathname === '/settings') {
-    return <Settings />;
-  }
 
   return (
     <div className={`browser-window ${isFullscreen ? 'fullscreen' : ''}`}>
@@ -188,40 +217,20 @@ const BrowserWindow = () => {
       />
       
       <div className="browser-content">
-        <div 
-          className="content-area" 
-          ref={contentAreaRef}
-        >
-          {/* Web environment fallback */}
-          {!window.electronAPI && (
-            <div className="web-fallback">
-              <div className="web-fallback-content">
-                <h2>AI Browser</h2>
-                <p>Welcome to the web version of AI Browser!</p>
-                <p>Current URL: {currentTab?.url || 'No URL'}</p>
-                <div className="web-actions">
-                  <button 
-                    onClick={() => window.open(currentTab?.url || 'https://www.google.com', '_blank')}
-                    className="web-action-btn"
-                  >
-                    Open in New Tab
-                  </button>
-                  <button 
-                    onClick={() => window.open('https://www.google.com', '_blank')}
-                    className="web-action-btn"
-                  >
-                    Open Google
-                  </button>
-                </div>
-                <p className="web-note">
-                  Note: Full browser functionality is available in the desktop version.
-                </p>
-              </div>
+        <Routes>
+          <Route path="/" element={
+            <div 
+              className="content-area" 
+              ref={contentAreaRef}
+            >
+              {/* The actual web content is now handled by Electron's BrowserView */}
+              {/* This div just reserves the space for the BrowserView */}
             </div>
-          )}
-        </div>
+          } />
+          <Route path="/settings" element={<Settings />} />
+        </Routes>
         
-        {isSidebarOpen && isMainRoute && <AISidebar />}
+        {isSidebarOpen && isMainRoute && <AISidebar onClose={toggleSidebar} />}
       </div>
     </div>
   );
