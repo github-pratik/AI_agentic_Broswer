@@ -11,12 +11,8 @@
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
     "autoprefixer": "^10.4.14",
-    "better-sqlite3": "^8.6.0",
     "cheerio": "^1.0.0-rc.12",
     "crypto-js": "^4.1.1",
-    "electron": "^25.0.0",
-    "electron-builder": "^24.6.4",
-    "electron-is-dev": "^2.0.0",
     "lucide-react": "^0.263.1",
     "node-fetch": "^3.3.2",
     "openai": "^4.20.1",
@@ -25,12 +21,12 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.1",
     "react-scripts": "5.0.1",
-    "sqlite3": "^5.1.6",
     "tailwindcss": "^3.3.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:web": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron .",
@@ -60,7 +56,12 @@
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "concurrently": "^7.6.0",
-    "wait-on": "^7.0.1"
+    "wait-on": "^7.0.1",
+    "electron": "^25.0.0",
+    "electron-builder": "^24.6.4",
+    "electron-is-dev": "^2.0.0",
+    "better-sqlite3": "^8.6.0",
+    "sqlite3": "^5.1.6"
   },
   "build": {
     "appId": "com.aibrowser.app",
