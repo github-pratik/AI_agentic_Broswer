@@ -2,7 +2,7 @@
   "name": "ai-browser",
   "version": "1.0.0",
   "description": "AI-powered cross-platform browser with Electron and React",
-  "main": "public/electron.js",
+
   "homepage": "./",
   "private": true,
   "dependencies": {
@@ -26,13 +26,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:web": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "electron": "electron .",
-    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron-pack": "npm run build && electron-builder",
-    "preelectron-pack": "npm run build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -55,26 +50,5 @@
   "devDependencies": {
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7"
-  },
-  "build": {
-    "appId": "com.aibrowser.app",
-    "productName": "AI Browser",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "build/**/*",
-      "node_modules/**/*",
-      "public/electron.js"
-    ],
-    "mac": {
-      "category": "public.app-category.productivity"
-    },
-    "win": {
-      "target": "nsis"
-    },
-    "linux": {
-      "target": "AppImage"
-    }
   }
 }
